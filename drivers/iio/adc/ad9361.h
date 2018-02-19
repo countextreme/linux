@@ -105,6 +105,8 @@ struct refclk_scale {
 };
 
 struct ad9361_rf_phy_state;
+struct ad9361_ext_band_ctl;
+
 struct ad9361_rf_phy {
 	struct spi_device 	*spi;
 	struct clk 		*clk_refin;
@@ -126,6 +128,7 @@ struct ad9361_rf_phy {
 	char			*bin_attr_buf;
 	u32 			ad9361_debugfs_entry_index;
 
+	struct ad9361_ext_band_ctl	*ext_band_ctl;
 	struct ad9361_rf_phy_state	*state;
 };
 
@@ -158,6 +161,31 @@ int ad9361_get_dig_tune_data(struct ad9361_rf_phy *phy,
 int ad9361_read_clock_data_delays(struct ad9361_rf_phy *phy);
 int ad9361_write_clock_data_delays(struct ad9361_rf_phy *phy);
 bool ad9361_uses_lvds_mode(struct ad9361_rf_phy *phy);
+
+#ifdef CONFIG_AD9361_EXT_BAND_CONTROL
+int ad9361_register_ext_band_control(struct ad9361_rf_phy *phy);
+int ad9361_adjust_rx_ext_band_settings(struct ad9361_rf_phy *phy, u64 freq);
+int ad9361_adjust_tx_ext_band_settings(struct ad9361_rf_phy *phy, u64 freq);
+void ad9361_unregister_ext_band_control(struct ad9361_rf_phy *phy);
+#else
+static inline int ad9361_register_ext_band_control(struct ad9361_rf_phy *phy)
+{
+	return 0;
+}
+static inline int ad9361_adjust_rx_ext_band_settings(
+		struct ad9361_rf_phy *phy, u64 freq)
+{
+	return 0;
+}
+static inline int ad9361_adjust_tx_ext_band_settings(
+		struct ad9361_rf_phy *phy, u64 freq)
+{
+	return 0;
+}
+static inline void ad9361_unregister_ext_band_control(
+		struct ad9361_rf_phy *phy)
+{}
+#endif
 
 #endif
 
